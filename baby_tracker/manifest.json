@@ -1,0 +1,59 @@
+{
+  "name": "宝宝记录 - 育儿助手",
+  "short_name": "宝宝记录",
+  "description": "宝宝生活记录应用 - 记录宝宝的日常活动，包括吃奶、睡眠、体温等",
+  "start_url": "/baby_tracker/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4CAF50",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "apple-touch-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "记录喂奶",
+      "short_name": "喂奶",
+      "description": "快速记录宝宝喂奶",
+      "url": "/baby_tracker/index.html?action=feeding",
+      "icons": [{ "src": "images/icon-feeding.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "记录睡眠",
+      "short_name": "睡眠",
+      "description": "快速记录宝宝睡眠",
+      "url": "/baby_tracker/index.html?action=sleep",
+      "icons": [{ "src": "images/icon-sleep.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "设置提醒",
+      "short_name": "提醒",
+      "description": "设置新的提醒",
+      "url": "/baby_tracker/index.html?action=reminder",
+      "icons": [{ "src": "images/icon-reminder.png", "sizes": "96x96" }]
+    }
+  ],
+  "categories": ["parenting", "health", "lifestyle"],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "scope": "/baby_tracker/"
+}
