@@ -1,0 +1,843 @@
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #4CAF50;
+    --primary-dark: #388E3C;
+    --primary-light: #C8E6C9;
+    --accent-color: #FF9800;
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --background-color: #F5F5F5;
+    --surface-color: #FFFFFF;
+    --divider-color: #E0E0E0;
+    --error-color: #F44336;
+    --success-color: #4CAF50;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    touch-action: manipulation;
+}
+
+/* 应用容器 */
+#app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 顶部导航栏 */
+#app-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+#page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 主内容区域 */
+#main-content {
+    flex: 1;
+    padding-bottom: 3rem;
+}
+
+/* 标签导航 */
+#tab-nav {
+    display: flex;
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--divider-color);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#tab-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 1rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+    position: relative;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    width: 50%;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 3px;
+}
+
+/* 页面内容 */
+#tab-content {
+    padding: 1rem;
+}
+
+.tab-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 统计区域 */
+.stats-section {
+    margin-bottom: 1.5rem;
+}
+
+.stats-section h2,
+.recent-records h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.stat-item {
+    background-color: var(--surface-color);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition);
+}
+
+.stat-item:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+    font-size: 2rem;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* 记录列表 */
+.records-list,
+.reminders-list {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.record-item,
+.reminder-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--divider-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.record-item:last-child,
+.reminder-item:last-child {
+    border-bottom: none;
+}
+
+.record-item:hover,
+.reminder-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.record-content,
+.reminder-content {
+    flex: 1;
+}
+
+.record-title,
+.reminder-title {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.record-time,
+.reminder-time {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.record-actions,
+.reminder-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* 记录类型选择 */
+.record-types {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.record-type-btn {
+    padding: 1rem;
+    background-color: var(--surface-color);
+    border: 1px solid var(--divider-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.record-type-btn:hover,
+.record-type-btn.active {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+    color: var(--primary-dark);
+}
+
+.record-type-btn span:first-child {
+    font-size: 1.5rem;
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: var(--transition);
+    background-color: var(--surface-color);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+/* 按钮样式 */
+.primary-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+}
+
+.primary-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.primary-btn:disabled {
+    background-color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.secondary-btn {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.secondary-btn:hover {
+    background-color: var(--primary-light);
+}
+
+/* 音乐播放器 */
+.music-player {
+    background-color: var(--surface-color);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.music-cover {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.music-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.music-info {
+    text-align: center;
+}
+
+#current-track {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.music-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.music-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.music-btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+#volume-slider {
+    flex: 1;
+}
+
+/* 播放列表 */
+.music-playlist {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.music-playlist h3 {
+    padding: 1rem;
+    border-bottom: 1px solid var(--divider-color);
+    color: var(--text-primary);
+}
+
+#playlist {
+    list-style: none;
+}
+
+.playlist-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--divider-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.playlist-item:last-child {
+    border-bottom: none;
+}
+
+.playlist-item:hover {
+    background-color: var(--background-color);
+}
+
+.playlist-item.active {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+
+/* 底部导航栏 */
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--surface-color);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 90;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    padding: 0.5rem;
+}
+
+.nav-item.active {
+    color: var(--primary-color);
+}
+
+.nav-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-label {
+    font-size: 0.75rem;
+}
+
+/* 浮动按钮 */
+.floating-btn {
+    position: fixed;
+    bottom: 6rem;
+    right: 1.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 80;
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 模态框 */
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+}
+
+.modal-container.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(20px);
+    transition: var(--transition);
+}
+
+.modal-container.active .modal {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--divider-color);
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.close-btn:hover {
+    background-color: var(--background-color);
+}
+
+.modal-content {
+    padding: 1rem;
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+/* 响应式设计 */
+/* iOS设备小屏幕优化 */
+@media (max-width: 375px) {
+    /* 小屏幕上的字体大小调整 */
+    h1, h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3, h4 {
+        font-size: 1.2rem;
+    }
+    
+    body {
+        font-size: 16px; /* 防止iOS自动缩放字体 */
+    }
+    
+    /* 统计卡片布局调整 */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .stat-item {
+        padding: 12px;
+        min-height: 100px;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+    
+    /* 记录列表样式优化 */
+    .record-item, .reminder-item {
+        padding: 10px;
+        min-height: auto;
+    }
+    
+    /* 底部导航按钮间距 */
+    .nav-item {
+        padding: 8px 4px;
+    }
+    
+    .nav-label {
+        font-size: 0.7rem;
+    }
+    
+    /* 记录类型按钮调整 */
+    .record-type-btn {
+        min-height: 80px;
+        padding: 10px;
+    }
+    
+    .record-type-btn span:first-child {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+    
+    /* 表单元素调整 */
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    input, select, textarea, button {
+        font-size: 16px;
+        padding: 12px;
+    }
+    
+    /* 音乐播放器控制按钮 */
+    .music-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.4rem;
+    }
+}
+
+/* 中等屏幕设备优化 */
+@media (min-width: 376px) and (max-width: 767px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .record-item, .reminder-item {
+        padding: 12px;
+    }
+    
+    .record-types {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* 大屏幕设备优化 */
+@media (min-width: 768px) {
+    #app-container {
+        max-width: 768px;
+        margin: 0 auto;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .record-types {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    #bottom-nav {
+        display: none;
+    }
+    
+    .floating-btn {
+        bottom: 1.5rem;
+    }
+}
+
+/* iOS 特定样式 */
+@supports (-webkit-touch-callout: none) {
+    /* 调整iOS Safari的安全区域 */
+    #app-header {
+        padding-top: calc(1rem + env(safe-area-inset-top));
+    }
+    
+    #bottom-nav {
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+        height: calc(3.5rem + env(safe-area-inset-bottom));
+    }
+    
+    .floating-btn {
+        bottom: calc(6rem + env(safe-area-inset-bottom));
+    }
+    
+    /* 确保内容不被刘海屏遮挡 */
+    #tab-content {
+        padding-top: 0;
+        padding-bottom: 0;
+        min-height: calc(100vh - 56px - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    }
+    
+    /* 表单输入框在iOS上的适配 */
+    input[type="text"],
+    input[type="number"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+        padding-left: 16px;
+        padding-right: 16px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: var(--border-radius);
+    }
+    
+    /* 禁用iOS的长按菜单 */
+    .record-type-btn,
+    .music-btn,
+    .playlist-item,
+    .record-item,
+    .reminder-item,
+    .close-btn,
+    .nav-item {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* 优化iOS触摸反馈 */
+    .btn,
+    .record-type-btn,
+    .playlist-item,
+    button,
+    .record-item,
+    .reminder-item,
+    .nav-item,
+    .music-btn,
+    .floating-btn {
+        -webkit-tap-highlight-color: transparent;
+        transition: all 0.15s ease;
+    }
+    
+    button:active,
+    .record-type-btn:active,
+    .record-item:active,
+    .reminder-item:active,
+    .nav-item:active,
+    .music-btn:active,
+    .floating-btn:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+    }
+    
+    /* 优化iOS字体渲染 */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-size-adjust: 100%;
+        touch-action: manipulation; /* 禁用双击缩放 */
+    }
+    
+    /* 增强iOS滚动体验 */
+    #tab-nav,
+    .modal,
+    #playlist,
+    .records-list,
+    .reminders-list,
+    #tab-content {
+        -webkit-overflow-scrolling: touch;
+        -webkit-scrollbar: none;
+        scrollbar-width: none;
+    }
+    
+    /* iOS虚拟键盘优化 */
+    @media (max-width: 767px) {
+        /* 确保在键盘弹出时内容不会被遮挡 */
+        .modal-content {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+    }
+    
+    /* 为iOS datetime-local输入框留出日历图标空间 */
+    input[type="datetime-local"] {
+        padding-right: 30px;
+    }
+}
