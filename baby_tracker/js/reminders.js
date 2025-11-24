@@ -63,6 +63,16 @@ function populateRepeatOptions() {
     });
 }
 
+// 格式化日期时间为local格式
+function formatDateTimeLocal(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 // 设置默认时间为当前时间
 function setDefaultTime() {
     const now = new Date();
@@ -79,6 +89,8 @@ function handleReminderSubmit(e) {
     const time = new Date(reminderTime.value);
     const repeat = reminderRepeat.value;
     const type = reminderType.value;
+    const idInput = reminderForm.querySelector('input[name="reminder-id"]');
+    const isEditing = idInput && idInput.value;
     
     // 验证表单
     if (!title) {
@@ -93,29 +105,83 @@ function handleReminderSubmit(e) {
         return;
     }
     
-    // 创建提醒对象
-    const reminder = {
-        id: generateId(),
-        title,
-        time: time.getTime(),
-        repeat,
-        type,
-        active: true,
-        createdAt: Date.now()
-    };
+    const data = getData();
     
-    // 保存提醒
-    saveReminder(reminder);
+    if (isEditing) {
+        // 编辑现有提醒
+        const reminderId = idInput.value;
+        const reminderIndex = data.reminders.findIndex(r => r.id === reminderId);
+        
+        if (reminderIndex !== -1) {
+            // 更新提醒
+            data.reminders[reminderIndex] = {
+                ...data.reminders[reminderIndex],
+                title,
+                time: time.getTime(),
+                repeat,
+                type
+            };
+            
+            saveData(data);
+            
+            // 如果提醒是活动的，更新通知
+            if (data.reminders[reminderIndex].active) {
+                scheduleNotification(data.reminders[reminderIndex]);
+            }
+        }
+    } else {
+        // 创建新提醒
+        const reminder = {
+            id: generateId(),
+            title,
+            time: time.getTime(),
+            repeat,
+            type,
+            active: true,
+            createdAt: Date.now()
+        };
+        
+        // 保存提醒
+        data.reminders.push(reminder);
+        saveData(data);
+        
+        // 如果提醒是活动的，安排通知
+        if (reminder.active) {
+            scheduleNotification(reminder);
+        }
+    }
     
     // 重置表单
     reminderForm.reset();
     setDefaultTime();
+    if (idInput) {
+        idInput.remove();
+    }
     
     // 重新加载提醒列表
     loadReminders();
     
+    // 隐藏表单
+    document.getElementById('reminder-form-container')?.classList.add('hidden');
+    
     // 显示成功消息
-    showNotification('提醒已设置成功！');
+    alert(isEditing ? '提醒已更新成功！' : '提醒已设置成功！');
+}
+
+// 生成唯一ID
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// 获取数据
+function getData() {
+    const data = localStorage.getItem('babyTrackerData');
+    return data ? JSON.parse(data) : { reminders: [] };
+}
+
+// 保存数据到localStorage
+function saveData(data) {
+    localStorage.setItem('babyTrackerData', JSON.stringify(data));
 }
 
 // 保存提醒
@@ -127,6 +193,54 @@ function saveReminder(reminder) {
     // 如果提醒是活动的，安排通知
     if (reminder.active) {
         scheduleNotification(reminder);
+    }
+}
+
+// 安排通知
+function scheduleNotification(reminder) {
+    const now = Date.now();
+    const delay = reminder.time - now;
+    
+    // 如果提醒时间已过，不安排
+    if (delay <= 0) return;
+    
+    // 检查浏览器是否支持通知
+    if ('Notification' in window && Notification.permission === 'granted') {
+        setTimeout(() => {
+            // 显示通知
+            const notification = new Notification(reminder.title, {
+                body: `宝宝生活记录提醒: ${getReminderTypeLabel(reminder.type)}`,
+                icon: '/icons/icon-192x192.png',
+                tag: reminder.id,
+                vibrate: [200, 100, 200]
+            });
+            
+            // 点击通知打开应用
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+            };
+            
+            // 播放声音
+            playReminderSound();
+            
+            // 如果是重复提醒，安排下一次
+            if (reminder.repeat !== 'once') {
+                rescheduleRepeatingReminder(reminder);
+                // 重新保存数据以更新下次提醒时间
+                const data = getData();
+                const reminderIndex = data.reminders.findIndex(r => r.id === reminder.id);
+                if (reminderIndex !== -1) {
+                    data.reminders[reminderIndex] = reminder;
+                    saveData(data);
+                }
+            }
+        }, delay);
+    } else {
+        // 使用checkDueReminders作为后备
+        setTimeout(() => {
+            checkDueReminders();
+        }, delay);
     }
 }
 
@@ -247,6 +361,9 @@ function editReminder(id) {
     const reminder = data.reminders.find(r => r.id === id);
     
     if (!reminder) return;
+    
+    // 显示表单
+    document.getElementById('reminder-form-container')?.classList.remove('hidden');
     
     // 填充表单
     reminderTitle.value = reminder.title;
@@ -398,21 +515,7 @@ function playReminderSound() {
     }
 }
 
-// 安排通知（在service worker支持的情况下）
-function scheduleNotification(reminder) {
-    const now = Date.now();
-    const delay = reminder.time - now;
-    
-    // 如果提醒时间已过，不安排
-    if (delay <= 0) return;
-    
-    // 在service worker不支持的情况下，我们依赖checkDueReminders函数
-    // 在支持的情况下，可以使用Notification API的showTrigger
-    // 这里我们先使用简单的定时器作为后备方案
-    setTimeout(() => {
-        checkDueReminders();
-    }, delay);
-}
+// 已合并到上面的scheduleNotification函数中
 
 // 取消通知
 function cancelNotification(id) {
@@ -425,6 +528,24 @@ function initRemindersEventListeners() {
     // 表单提交事件
     if (reminderForm) {
         reminderForm.addEventListener('submit', handleReminderSubmit);
+    }
+    
+    // 取消按钮事件
+    const cancelBtn = document.getElementById('cancel-reminder-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            document.getElementById('reminder-form-container')?.classList.add('hidden');
+            // 重置表单
+            if (reminderForm) {
+                reminderForm.reset();
+                setDefaultTime();
+                // 移除隐藏的ID字段
+                const idInput = reminderForm.querySelector('input[name="reminder-id"]');
+                if (idInput) {
+                    idInput.remove();
+                }
+            }
+        });
     }
     
     // 动态添加的元素事件委托

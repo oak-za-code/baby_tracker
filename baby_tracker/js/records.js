@@ -1,5 +1,7 @@
 // 记录功能模块JavaScript
 
+// 全局函数已在storage.js和utils.js中定义，直接使用
+
 // DOM元素
 const recordTypeBtns = document.querySelectorAll('.record-type-btn');
 const recordsContainer = document.getElementById('records-container');
@@ -412,6 +414,11 @@ function handleRecordSubmit(e) {
 function saveRecord(record) {
     const data = getData();
     
+    // 确保data.records存在且为数组
+    if (!Array.isArray(data.records)) {
+        data.records = [];
+    }
+    
     // 如果是结束睡眠记录，查找并更新对应的开始记录
     if (record.type === 'sleep' && record.endTime) {
         const ongoingSleepIndex = data.records.findIndex(r => 
@@ -436,70 +443,115 @@ function saveRecord(record) {
 
 // 加载历史记录
 function loadHistoryRecords(type) {
-    const data = getData();
-    const historyContainer = document.getElementById('history-records');
-    
-    // 筛选指定类型的记录并按时间倒序排序
-    const typeRecords = data.records
-        .filter(record => record.type === type)
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, 10);
-    
-    if (typeRecords.length === 0) {
-        historyContainer.innerHTML = `
-            <div class="empty-state">
-                <p>暂无记录</p>
-            </div>
-        `;
-        return;
-    }
-    
-    historyContainer.innerHTML = '';
-    
-    typeRecords.forEach(record => {
-        const recordItem = document.createElement('div');
-        recordItem.className = 'history-record-item';
+    try {
+        // 安全获取历史记录容器
+        const historyContainer = document.getElementById('history-records');
+        if (!historyContainer) {
+            console.error('历史记录容器未找到');
+            return;
+        }
         
-        const formattedTime = formatDateTime(record.timestamp);
-        const detailsHTML = getRecordDetailsHTML(record);
+        // 清空容器
+        historyContainer.innerHTML = '';
         
-        recordItem.innerHTML = `
-            <div class="record-header">
-                <div class="record-time">${formattedTime}</div>
-                <div class="record-actions">
-                    <button class="icon-btn edit-record-small" data-id="${record.id}">✏️</button>
-                    <button class="icon-btn delete-record-small" data-id="${record.id}">🗑️</button>
-                </div>
-            </div>
-            <div class="record-details">${detailsHTML}</div>
-        `;
+        // 安全获取数据
+        const data = getData && typeof getData === 'function' ? getData() : {};
+        const records = Array.isArray(data && data.records) ? data.records : [];
         
-        historyContainer.appendChild(recordItem);
-    });
-    
-    // 添加事件监听器
-    document.querySelectorAll('.edit-record-small').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const recordId = e.currentTarget.dataset.id;
-            editRecord(recordId);
-        });
-    });
-    
-    document.querySelectorAll('.delete-record-small').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const recordId = e.currentTarget.dataset.id;
-            if (confirm('确定要删除这条记录吗？')) {
-                deleteRecord(recordId);
-                loadHistoryRecords(type);
+        // 安全过滤记录
+        let typeRecords = [];
+        try {
+            // 确保records是数组再调用filter
+            if (Array.isArray(records)) {
+                typeRecords = records.filter(record => {
+                    return record && typeof record === 'object' && (!type || record.type === type);
+                });
+            }
+        } catch (filterError) {
+            console.error('过滤记录失败:', filterError);
+            typeRecords = [];
+        }
+        
+        // 安全排序记录
+        try {
+            typeRecords.sort((a, b) => {
+                const dateA = a && a.timestamp ? new Date(a.timestamp).getTime() : 0;
+                const dateB = b && b.timestamp ? new Date(b.timestamp).getTime() : 0;
+                return dateB - dateA;
+            });
+        } catch (sortError) {
+            console.error('排序记录失败:', sortError);
+        }
+        
+        // 安全截取记录
+        try {
+            typeRecords = typeRecords.slice(0, 50);
+        } catch (sliceError) {
+            console.error('截取记录失败:', sliceError);
+        }
+        
+        // 显示空状态或渲染记录
+        if (typeRecords.length === 0) {
+            historyContainer.innerHTML = '<div class="empty-state"><p>暂无记录</p></div>';
+            return;
+        }
+        
+        // 渲染记录
+        typeRecords.forEach(record => {
+            try {
+                const recordItem = document.createElement('div');
+                recordItem.className = 'history-record-item';
                 
-                // 更新首页数据
-                if (window.updateStats && window.loadRecentRecords) {
-                    window.updateStats();
-                    window.loadRecentRecords();
-                }
+                const formattedTime = formatDateTime(record.timestamp);
+                const detailsHTML = getRecordDetailsHTML(record);
+                
+                recordItem.innerHTML = `
+                    <div class="record-header">
+                        <div class="record-time">${formattedTime}</div>
+                        <div class="record-actions">
+                            <button class="icon-btn edit-record-small" data-id="${record.id}">✏️</button>
+                            <button class="icon-btn delete-record-small" data-id="${record.id}">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="record-details">${detailsHTML}</div>
+                `;
+                
+                historyContainer.appendChild(recordItem);
+            } catch (e) {
+                console.error('渲染记录出错:', e);
             }
         });
-    });
+        
+        // 添加事件监听器
+        document.querySelectorAll('.edit-record-small').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const recordId = e.currentTarget.dataset.id;
+                editRecord(recordId);
+            });
+        });
+        
+        document.querySelectorAll('.delete-record-small').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const recordId = e.currentTarget.dataset.id;
+                if (confirm('确定要删除这条记录吗？')) {
+                    deleteRecord(recordId);
+                    loadHistoryRecords(type);
+                    
+                    // 更新首页数据
+                    if (window.updateStats && window.loadRecentRecords) {
+                        window.updateStats();
+                        window.loadRecentRecords();
+                    }
+                }
+            });
+        });
+    } catch (e) {
+        console.error('加载历史记录失败:', e);
+        const historyContainer = document.getElementById('history-records');
+        if (historyContainer) {
+            historyContainer.innerHTML = '<div class="error-state"><p>加载记录失败</p></div>';
+        }
+    }
 }
 
 // 获取记录详情HTML
@@ -661,6 +713,17 @@ function formatDateTimeLocal(date) {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// 获取数据
+function getData() {
+    const data = localStorage.getItem('babyTrackerData'); // 统一使用babyTrackerData作为key
+    return data ? JSON.parse(data) : { records: [], reminders: [], settings: {} };
+}
+
+// 保存数据
+function saveData(data) {
+    localStorage.setItem('babyTrackerData', JSON.stringify(data));
 }
 
 // 显示通知

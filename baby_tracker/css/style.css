@@ -288,6 +288,54 @@ body {
     font-size: 1.5rem;
 }
 
+/* 提醒表单样式 */
+.form-container {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.form-container.hidden {
+    display: none;
+}
+
+.reminder-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.secondary-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--border-radius);
+    background-color: var(--surface-color);
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.secondary-btn:active {
+    background-color: var(--background-color);
+}
+
+/* 提醒列表样式 */
+.reminders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
 /* 表单样式 */
 .form-group {
     margin-bottom: 1rem;

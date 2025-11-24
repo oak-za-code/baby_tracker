@@ -1,5 +1,7 @@
 // 主应用JavaScript文件
 
+// 全局函数已在storage.js和utils.js中定义，直接使用
+
 // DOM元素
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabPanels = document.querySelectorAll('.tab-panel');
@@ -47,20 +49,12 @@ function initApp() {
 // 更新页面标题
 function updatePageTitle() {
     const data = getData();
-    if (data.settings.babyName) {
-        pageTitle.textContent = `${data.settings.babyName}的记录`;
+    if (pageTitle) {
+        pageTitle.textContent = `${(data.settings && data.settings.babyName) || '宝宝'}的记录`;
     }
 }
 
-// 获取数据
-function getData() {
-    return JSON.parse(localStorage.getItem('baby_tracker_data') || '{}');
-}
 
-// 保存数据
-function saveData(data) {
-    localStorage.setItem('baby_tracker_data', JSON.stringify(data));
-}
 
 // 切换标签
 function switchTab(tabId) {
@@ -117,9 +111,23 @@ function loadRecentRecords() {
     const data = getData();
     const recentRecordsList = document.getElementById('recent-records-list');
     
-    // 按时间倒序排序
-    const sortedRecords = [...data.records].sort((a, b) => b.timestamp - a.timestamp);
-    const recentRecords = sortedRecords.slice(0, 5);
+    // 安全地获取records数组
+    let records = [];
+    try {
+        records = Array.isArray(data && data.records) ? data.records : [];
+    } catch (e) {
+        console.error('获取记录数据失败:', e);
+        records = [];
+    }
+    
+    // 安全地排序和截取
+    let recentRecords = [];
+    try {
+        recentRecords = [...records].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 5);
+    } catch (e) {
+        console.error('处理记录数据失败:', e);
+        recentRecords = [];
+    }
     
     if (recentRecords.length === 0) {
         recentRecordsList.innerHTML = `
@@ -238,42 +246,66 @@ function getRecordAdditionalInfo(record) {
 
 // 更新统计数据
 function updateStats() {
-    const data = getData();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayTimestamp = today.getTime();
-    
-    // 筛选今日记录
-    const todayRecords = data.records.filter(record => record.timestamp >= todayTimestamp);
-    
-    // 计算喂奶次数
-    const feedCount = todayRecords.filter(record => record.type === 'feeding').length;
-    document.getElementById('feed-count').textContent = feedCount;
-    
-    // 计算睡眠时长
-    let sleepDuration = 0;
-    todayRecords.forEach(record => {
-        if (record.type === 'sleep') {
-            if (record.endTime) {
-                sleepDuration += (record.endTime - record.startTime);
-            } else {
-                sleepDuration += (Date.now() - record.startTime);
-            }
+    try {
+        const data = getData() || {};
+        const records = Array.isArray(data.records) ? data.records : [];
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayTimestamp = today.getTime();
+        
+        // 使用try-catch包装filter操作
+        let todayRecords = [];
+        try {
+            todayRecords = records.filter(record => {
+                try {
+                    return record && typeof record === 'object' && 
+                           record.timestamp && 
+                           record.timestamp >= todayTimestamp;
+                } catch (innerError) {
+                    return false;
+                }
+            });
+        } catch (e) {
+            console.error('筛选今日记录失败:', e);
+            todayRecords = [];
         }
-    });
-    const sleepHours = Math.round(sleepDuration / (1000 * 60 * 60) * 10) / 10;
-    document.getElementById('sleep-duration').textContent = `${sleepHours}h`;
-    
-    // 获取最新体温
-    const tempRecords = todayRecords
-        .filter(record => record.type === 'temperature' && record.temperature)
-        .sort((a, b) => b.timestamp - a.timestamp);
-    const lastTemperature = tempRecords[0]?.temperature || '--.-';
-    document.getElementById('last-temperature').textContent = `${lastTemperature}°C`;
-    
-    // 计算洗澡次数
-    const bathCount = todayRecords.filter(record => record.type === 'bath').length;
-    document.getElementById('bath-count').textContent = bathCount;
+        
+        // 计算喂奶次数
+        const feedCount = todayRecords.filter(record => record && record.type === 'feeding').length;
+        const feedCountEl = document.getElementById('feed-count');
+        if (feedCountEl) feedCountEl.textContent = feedCount;
+        
+        // 计算睡眠时长
+        let sleepDuration = 0;
+        todayRecords.forEach(record => {
+            if (record && record.type === 'sleep') {
+                if (record.endTime) {
+                    sleepDuration += (record.endTime - record.startTime);
+                } else {
+                    sleepDuration += (Date.now() - record.startTime);
+                }
+            }
+        });
+        const sleepHours = Math.round(sleepDuration / (1000 * 60 * 60) * 10) / 10;
+        const sleepDurationEl = document.getElementById('sleep-duration');
+        if (sleepDurationEl) sleepDurationEl.textContent = `${sleepHours}h`;
+        
+        // 获取最新体温
+        const tempRecords = todayRecords
+            .filter(record => record && record.type === 'temperature' && record.temperature)
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        const lastTemperature = tempRecords[0]?.temperature || '--.-';
+        const lastTemperatureEl = document.getElementById('last-temperature');
+        if (lastTemperatureEl) lastTemperatureEl.textContent = `${lastTemperature}°C`;
+        
+        // 计算洗澡次数
+        const bathCount = todayRecords.filter(record => record && record.type === 'bath').length;
+        const bathCountEl = document.getElementById('bath-count');
+        if (bathCountEl) bathCountEl.textContent = bathCount;
+    } catch (e) {
+        console.error('更新统计数据失败:', e);
+    }
 }
 
 // 加载提醒列表
@@ -461,8 +493,8 @@ function initEventListeners() {
     
     // 添加提醒按钮点击事件
     document.getElementById('add-reminder-btn')?.addEventListener('click', () => {
-        // 此函数将在reminders.js中实现
-        console.log('Add reminder');
+        // 显示提醒表单
+        document.getElementById('reminder-form-container')?.classList.remove('hidden');
     });
 }
 
